@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'api_service.dart';
+import 'dart:io';
+// import 'package:image_picker/image_picker.dart';
 
 class FaceRegistrationScreen extends StatefulWidget {
-  const FaceRegistrationScreen({super.key}); // ✅ Added super.key
+  const FaceRegistrationScreen({super.key});
 
   @override
   State<FaceRegistrationScreen> createState() => _FaceRegistrationScreenState();
@@ -11,40 +12,22 @@ class FaceRegistrationScreen extends StatefulWidget {
 
 class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> {
   final TextEditingController _nameController = TextEditingController();
-  final FaceDetector _faceDetector = FaceDetector(
-    options: FaceDetectorOptions(enableLandmarks: true),
-  );
 
   Future<void> _registerFace() async {
     String name = _nameController.text.trim();
     if (name.isEmpty) {
-      if (!mounted) return; // ✅ Check if mounted before using context
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Enter a name")));
       return;
     }
 
-    var image = await ApiService.pickImage();
+    File? image = await ApiService.pickImage();
     if (image == null) return;
 
-    List<Face> faces =
-        (await ApiService.detectFaces(
-          image,
-          _faceDetector,
-        )).cast<Face>(); // ✅ Explicit cast
-
-    if (faces.isEmpty) {
-      if (!mounted) return; // ✅ Check if mounted before using context
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("No face detected")));
-      return;
-    }
-
     bool success = await ApiService.registerFace(image, name);
-    if (!mounted) return; // ✅ Check if mounted before using context
-
+    if (!mounted) return;
     String message = success ? "Face Registered!" : "Registration Failed";
     ScaffoldMessenger.of(
       context,
@@ -53,7 +36,6 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> {
 
   @override
   void dispose() {
-    _faceDetector.close();
     _nameController.dispose();
     super.dispose();
   }

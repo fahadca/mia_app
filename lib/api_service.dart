@@ -4,10 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 class ApiService {
-  static const String baseUrl =
-      "http://192.168.1.5:5000"; // Change to your Flask server IP
+  static const String baseUrl = "http://192.168.1.7:5000";
 
-  /// Pick an image from the camera.
+  /// Pick an image from the camera for face registration.
   static Future<File?> pickImage() async {
     final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.camera,
@@ -21,34 +20,39 @@ class ApiService {
     FaceDetector faceDetector,
   ) async {
     final inputImage = InputImage.fromFile(image);
-    final faces = await faceDetector.processImage(inputImage);
-    return faces;
+    return await faceDetector.processImage(inputImage);
   }
 
   /// Send an image to Flask API for face registration.
   static Future<bool> registerFace(File image, String name) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/register_face'),
-    );
-    request.fields['name'] = name;
-    request.files.add(await http.MultipartFile.fromPath('image', image.path));
-
-    var response = await request.send();
-    return response.statusCode == 200;
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/register_face'),
+      );
+      request.fields['name'] = name;
+      request.files.add(await http.MultipartFile.fromPath('image', image.path));
+      var response = await request.send();
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
   }
 
-  /// Send an image to Flask API for face recognition.
+  /// Send a frame to Flask API for real-time face recognition.
   static Future<String> recognizeFace(File image) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/recognize_face'),
-    );
-    request.files.add(await http.MultipartFile.fromPath('image', image.path));
-
-    var response = await request.send();
-    return response.statusCode == 200
-        ? await response.stream.bytesToString()
-        : "Unknown";
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/recognize_face'),
+      );
+      request.files.add(await http.MultipartFile.fromPath('image', image.path));
+      var response = await request.send();
+      return response.statusCode == 200
+          ? await response.stream.bytesToString()
+          : "Unknown";
+    } catch (e) {
+      return "Unknown";
+    }
   }
 }
