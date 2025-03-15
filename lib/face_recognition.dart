@@ -4,7 +4,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'api_service.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
+// import 'package:image_picker/image_picker.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class FaceRecognitionScreen extends StatefulWidget {
   const FaceRecognitionScreen({super.key});
@@ -21,6 +22,7 @@ class _FaceRecognitionScreenState extends State<FaceRecognitionScreen> {
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(enableLandmarks: true),
   );
+  FlutterTts flutterTts = FlutterTts();
 
   @override
   void initState() {
@@ -75,6 +77,7 @@ class _FaceRecognitionScreenState extends State<FaceRecognitionScreen> {
           recognizedName = name.isNotEmpty ? name : "No match";
         });
       }
+      flutterTts.speak(recognizedName);
     } else {
       if (mounted) {
         setState(() {
