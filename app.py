@@ -7,6 +7,8 @@ from firebase_admin import credentials, firestore
 from facenet_pytorch import MTCNN, InceptionResnetV1
 import torch
 import time
+# import yolov5
+from ultralytics import YOLO
 
 app = Flask(__name__)
 cred = credentials.Certificate("miaapp-d291d-firebase-adminsdk-fbsvc-2ec2b7bf03.json")
@@ -16,6 +18,8 @@ db = firestore.client()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 mtcnn = MTCNN(image_size=160, margin=0)
 facenet = InceptionResnetV1(pretrained='vggface2').eval()
+# yolo_model = yolov5.load('yolov5s.pt')  # Load YOLOv5 model
+yolo_model = YOLO("yolov8s.pt")  # Load YOLOv8 small model
 
 def get_embedding(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -68,11 +72,19 @@ def recognize_face():
     
     return jsonify({"name": recognized_person})
 
-@app.route('/last_five_faces', methods=['GET'])
-def last_five_faces():
-    logs = db.collection('logs').order_by("timestamp", direction=firestore.Query.DESCENDING).limit(5).stream()
-    recent_faces = [{"name": log.to_dict()["name"], "timestamp": log.to_dict()["timestamp"]} for log in logs]
-    return jsonify(recent_faces)
+@app.route('/detect_objects', methods=['POST'])
+def detect_objects():
+    image = cv2.imdecode(np.frombuffer(request.files['image'].read(), np.uint8), cv2.IMREAD_COLOR)
+    results = yolo_model(image)
+    detected_objects = set()
+    
+    for result in results:
+        for box in result.boxes:
+            cls = int(box.cls[0])
+            detected_objects.add(yolo_model.names[cls])
+
+    return jsonify({"objects": list(detected_objects)})
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

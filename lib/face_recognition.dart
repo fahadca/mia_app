@@ -4,7 +4,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'api_service.dart';
 import 'dart:io';
-// import 'package:image_picker/image_picker.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class FaceRecognitionScreen extends StatefulWidget {
@@ -48,7 +47,7 @@ class _FaceRecognitionScreenState extends State<FaceRecognitionScreen> {
         if (imageFile != null) {
           _processFaceRecognition(imageFile);
         }
-        await Future.delayed(const Duration(seconds: 1)); // Prevent overload
+        await Future.delayed(const Duration(seconds: 1));
         _isDetecting = false;
       }
     });
@@ -87,6 +86,10 @@ class _FaceRecognitionScreenState extends State<FaceRecognitionScreen> {
     }
   }
 
+  void _onLongPress() {
+    Navigator.pop(context); // Return to home screen
+  }
+
   @override
   void dispose() {
     _cameraController?.dispose();
@@ -96,25 +99,31 @@ class _FaceRecognitionScreenState extends State<FaceRecognitionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Live Face Recognition")),
-      body: Column(
-        children: [
-          Expanded(
-            child:
-                _cameraController == null ||
-                        !_cameraController!.value.isInitialized
-                    ? const Center(child: CircularProgressIndicator())
-                    : CameraPreview(_cameraController!),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              recognizedName,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    return GestureDetector(
+      onLongPress: _onLongPress,
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Live Face Recognition")),
+        body: Column(
+          children: [
+            Expanded(
+              child:
+                  _cameraController == null ||
+                          !_cameraController!.value.isInitialized
+                      ? const Center(child: CircularProgressIndicator())
+                      : CameraPreview(_cameraController!),
             ),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                recognizedName,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
