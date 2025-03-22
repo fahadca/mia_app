@@ -83,7 +83,7 @@ flutter run
 
 ---
 
-## ⚡ **Switching Between YOLOv5 and YOLOv8**
+## ⚡ **YOLOv8**
 
 This project now uses **YOLOv8 for improved accuracy**.
 If you want to **ensure YOLOv8 is correctly set up**, run:
