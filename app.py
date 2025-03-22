@@ -11,7 +11,7 @@ import time
 from ultralytics import YOLO
 
 app = Flask(__name__)
-cred = credentials.Certificate("miaapp-d291d-firebase-adminsdk-fbsvc-2ec2b7bf03.json")
+cred = credentials.Certificate("miaapp-d291d-firebase-adminsdk-fbsvc-e0b6a0c874.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 

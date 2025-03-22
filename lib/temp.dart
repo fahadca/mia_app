@@ -1,328 +1,168 @@
 // import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'fall_detect.dart';
 // import 'face_registration.dart';
 // import 'face_recognition.dart';
-// import 'package:flutter/services.dart';
+// import 'object_detection.dart';
 
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp();
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatefulWidget {
-//   const MyApp({super.key});
+// class HomePageWidget extends StatefulWidget {
+//   const HomePageWidget({super.key});
 
 //   @override
-//   State<MyApp> createState() => _MyAppState();
+//   State<HomePageWidget> createState() => _HomePageWidgetState();
 // }
 
-// class _MyAppState extends State<MyApp> {
-//   int volumeUpPressCount = 0;
+// class _HomePageWidgetState extends State<HomePageWidget> {
+//   List<String> emergencyContacts = [];
+//   late FallDetection _fallDetection;
+//   bool _fallOccurred = false;
+//   int _tapCounter = 0;
+//   DateTime? _firstTapTime;
 
 //   @override
 //   void initState() {
 //     super.initState();
-//     HardwareKeyboard.instance.addHandler(_handleKeyEvent);
-//   }
-
-//   bool _handleKeyEvent(KeyEvent event) {
-//     if (event is KeyDownEvent) {
-//       if (event.logicalKey == LogicalKeyboardKey.audioVolumeUp) {
-//         _onVolumeUpPressed();
-//         return true;
-//       }
-//     }
-//     return false;
-//   }
-
-//   void _onVolumeUpPressed() {
-//     volumeUpPressCount++;
-//     if (volumeUpPressCount == 2) {
-//       Navigator.push(
-//         context,
-//         MaterialPageRoute(builder: (context) => const FaceRecognitionScreen()),
-//       );
-//     } else if (volumeUpPressCount == 4) {
-//       Navigator.pop(context);
-//     }
+//     _loadContacts();
+//     _fallDetection = FallDetection(
+//       onFallDetected: (bool detected) {
+//         setState(() {
+//           _fallOccurred = detected;
+//         });
+//       },
+//     );
+//     _fallDetection.startMonitoring();
 //   }
 
 //   @override
 //   void dispose() {
-//     HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
+//     _fallDetection.stopMonitoring();
 //     super.dispose();
 //   }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(debugShowCheckedModeBanner: false, home: HomeScreen());
-//   }
-// }
-
-// class HomeScreen extends StatelessWidget {
-//   const HomeScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('MIA')),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             ElevatedButton(
-//               onPressed: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => const FaceRegistrationScreen(),
-//                   ),
-//                 );
-//               },
-//               child: const Text('Register Face'),
-//             ),
-//             const SizedBox(height: 20),
-//             ElevatedButton(
-//               onPressed: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => const FaceRecognitionScreen(),
-//                   ),
-//                 );
-//               },
-//               child: const Text('Recognize Face'),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// import 'package:flutter/material.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'face_registration.dart';
-// import 'face_recognition.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp();
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key}); // ✅ Added super.key
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(debugShowCheckedModeBanner: false, home: HomeScreen());
-//   }
-// }
-
-// class HomeScreen extends StatelessWidget {
-//   const HomeScreen({super.key}); // ✅ Added super.key
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('MIA')),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             ElevatedButton(
-//               onPressed: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => const FaceRegistrationScreen(),
-//                   ),
-//                 );
-//               },
-//               child: const Text('Register Face'),
-//             ),
-//             const SizedBox(height: 20),
-//             ElevatedButton(
-//               onPressed: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => const FaceRecognitionScreen(),
-//                   ),
-//                 );
-//               },
-//               child: const Text('Recognize Face'),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-// import 'package:flutter/material.dart';
-// import 'package:camera/camera.dart';
-// import 'package:path_provider/path_provider.dart';
-// import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-// import 'api_service.dart';
-// import 'dart:io';
-// import 'package:image_picker/image_picker.dart';
-// import 'package:flutter_tts/flutter_tts.dart';
-// import 'package:flutter_volume_controller/flutter_volume_controller.dart';
-
-// class FaceRecognitionScreen extends StatefulWidget {
-//   const FaceRecognitionScreen({super.key});
-
-//   @override
-//   State<FaceRecognitionScreen> createState() => _FaceRecognitionScreenState();
-// }
-
-// class _FaceRecognitionScreenState extends State<FaceRecognitionScreen> {
-//   CameraController? _cameraController;
-//   late List<CameraDescription> _cameras;
-//   bool _isDetecting = false;
-//   String recognizedName = "Detecting...";
-//   final FaceDetector _faceDetector = FaceDetector(
-//     options: FaceDetectorOptions(enableLandmarks: true),
-//   );
-//   FlutterTts flutterTts = FlutterTts();
-//   int volumeUpPressCount = 0;
-//   double previousVolume = 0.0;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _initializeCamera();
-//     FlutterVolumeController.addListener((volume) {
-//       if (volume > previousVolume) {
-//         _onVolumeUpPressed();
-//       }
-//       previousVolume = volume;
+//   Future<void> _loadContacts() async {
+//     SharedPreferences prefs = await SharedPreferences.getInstance();
+//     setState(() {
+//       emergencyContacts = prefs.getStringList('emergencyContacts') ?? [];
 //     });
 //   }
 
-//   void _onVolumeUpPressed() {
-//     volumeUpPressCount++;
-//     if (volumeUpPressCount == 2) {
-//       _startFaceRecognition();
-//     } else if (volumeUpPressCount == 4) {
-//       Navigator.pop(context);
-//     }
-//   }
-
-//   Future<void> _initializeCamera() async {
-//     _cameras = await availableCameras();
-//     _cameraController = CameraController(_cameras[0], ResolutionPreset.medium);
-//     await _cameraController!.initialize();
-//     if (mounted) {
-//       setState(() {});
-//       _startFaceRecognition();
-//     }
-//   }
-
-//   void _startFaceRecognition() {
-//     _cameraController!.startImageStream((CameraImage image) async {
-//       if (!_isDetecting) {
-//         _isDetecting = true;
-//         File? imageFile = await _convertCameraImageToFile(image);
-//         if (imageFile != null) {
-//           _processFaceRecognition(imageFile);
-//         }
-//         await Future.delayed(const Duration(seconds: 1)); // Prevent overload
-//         _isDetecting = false;
-//       }
-//     });
-//   }
-
-//   Future<File?> _convertCameraImageToFile(CameraImage image) async {
-//     try {
-//       final directory = await getTemporaryDirectory();
-//       final path = '${directory.path}/frame.jpg';
-//       final XFile? picture = await _cameraController?.takePicture();
-//       if (picture == null) return null;
-//       File file = File(path);
-//       await picture.saveTo(file.path);
-//       return file;
-//     } catch (e) {
-//       return null;
-//     }
-//   }
-
-//   Future<void> _processFaceRecognition(File imageFile) async {
-//     List<Face> faces = await ApiService.detectFaces(imageFile, _faceDetector);
-//     if (faces.isNotEmpty) {
-//       String name = await ApiService.recognizeFace(imageFile);
-//       if (mounted) {
-//         setState(() {
-//           recognizedName = name.isNotEmpty ? name : "No match";
-//         });
-//       }
-//       flutterTts.speak(recognizedName);
+//   void _handleTripleTap(BuildContext context) {
+//     if (_firstTapTime == null ||
+//         DateTime.now().difference(_firstTapTime!) >
+//             const Duration(seconds: 1)) {
+//       _firstTapTime = DateTime.now();
+//       _tapCounter = 1;
 //     } else {
-//       if (mounted) {
-//         setState(() {
-//           recognizedName = "No match";
-//         });
+//       _tapCounter++;
+//       if (_tapCounter == 3) {
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => const ObjectDetectionScreen(),
+//           ),
+//         );
+//         _tapCounter = 0;
 //       }
 //     }
 //   }
 
 //   @override
-//   void dispose() {
-//     _cameraController?.dispose();
-//     _faceDetector.close();
-//     FlutterVolumeController.removeListener();
-//     super.dispose();
-//   }
-
-//   @override
 //   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("Live Face Recognition")),
-//       body: Column(
-//         children: [
-//           Expanded(
-//             child:
-//                 _cameraController == null ||
-//                         !_cameraController!.value.isInitialized
-//                     ? const Center(child: CircularProgressIndicator())
-//                     : CameraPreview(_cameraController!),
+//     return GestureDetector(
+//       onLongPress: () {
+//         Navigator.push(
+//           context,
+//           MaterialPageRoute(
+//             builder: (context) => const FaceRecognitionScreen(),
 //           ),
-//           Container(
-//             padding: const EdgeInsets.all(16.0),
-//             child: Text(
-//               recognizedName,
-//               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-//             ),
+//         );
+//       },
+//       onTap: () => _handleTripleTap(context),
+//       child: Scaffold(
+//         backgroundColor: Colors.white,
+//         appBar: AppBar(title: const Text('MIA')),
+//         drawer: Drawer(
+//           child: ListView(
+//             children: [
+//               ListTile(
+//                 title: const Text('Register Face'),
+//                 onTap:
+//                     () => Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (context) => const FaceRegistrationScreen(),
+//                       ),
+//                     ),
+//               ),
+//               ListTile(
+//                 title: const Text('Recognize Face'),
+//                 onTap:
+//                     () => Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (context) => const FaceRecognitionScreen(),
+//                       ),
+//                     ),
+//               ),
+//               ListTile(
+//                 title: const Text('Detect Objects'),
+//                 onTap:
+//                     () => Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (context) => const ObjectDetectionScreen(),
+//                       ),
+//                     ),
+//               ),
+//             ],
 //           ),
-//         ],
+//         ),
+//         body: Center(
+//           child: Column(
+//             mainAxisAlignment: MainAxisAlignment.center,
+//             children: [
+//               Text(
+//                 _fallOccurred ? 'FALL DETECTED' : 'NO FALL',
+//                 style: TextStyle(
+//                   fontSize: 24,
+//                   color: _fallOccurred ? Colors.red : Colors.green,
+//                 ),
+//               ),
+//               const SizedBox(height: 20),
+//               ElevatedButton(
+//                 onPressed:
+//                     () => Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (context) => const FaceRegistrationScreen(),
+//                       ),
+//                     ),
+//                 child: const Text('Register Face'),
+//               ),
+//               ElevatedButton(
+//                 onPressed:
+//                     () => Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (context) => const FaceRecognitionScreen(),
+//                       ),
+//                     ),
+//                 child: const Text('Recognize Face'),
+//               ),
+//               ElevatedButton(
+//                 onPressed:
+//                     () => Navigator.push(
+//                       context,
+//                       MaterialPageRoute(
+//                         builder: (context) => const ObjectDetectionScreen(),
+//                       ),
+//                     ),
+//                 child: const Text('Detect Objects'),
+//               ),
+//             ],
+//           ),
+//         ),
 //       ),
 //     );
 //   }

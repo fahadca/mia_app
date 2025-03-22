@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 class ApiService {
-  static const String baseUrl = "http://192.168.1.6:5000"; // Ensure correct IP
+  static const String baseUrl =
+      "http://192.168.100.181:5000"; // Ensure correct IP
 
   static Future<File?> pickImage() async {
     final pickedFile = await ImagePicker().pickImage(
