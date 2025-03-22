@@ -10,16 +10,16 @@
 //   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
 //   StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
 
-//   final double _impactThreshold = 22.0; // Reduced for quicker impact detection
-//   final double _freeFallThreshold = 5.5; // Lowered to detect falls faster
-//   final double _rotationThreshold = 3.5; // Detects sudden rotation
-//   final double _inactivityThreshold = 10.0; // Detects stillness quicker
+//   final double _impactThreshold = 18.0; // Lowered for quicker impact detection
+//   final double _freeFallThreshold = 4.5; // Detects free fall instantly
+//   final double _rotationThreshold = 3.0; // Detects sudden rotation
+//   final double _inactivityThreshold = 8.0; // Faster stillness detection
 //   final Duration _fallTimeout = const Duration(
-//     milliseconds: 1200,
-//   ); // Faster confirmation
+//     milliseconds: 800,
+//   ); // Extremely fast confirmation
 //   final Duration _stillnessCheckDuration = const Duration(
-//     seconds: 2,
-//   ); // Reduced delay
+//     seconds: 1,
+//   ); // Reduced stillness check delay
 
 //   bool _fallDetected = false;
 //   bool _isInFreeFall = false;
@@ -35,13 +35,13 @@
 //       (event) {
 //         double acceleration = _calculateAcceleration(event);
 
-//         // Free Fall Detection
+//         // Immediate Free Fall Detection
 //         if (acceleration < _freeFallThreshold) {
 //           _isInFreeFall = true;
 //           _fallStartTime = DateTime.now();
 //         }
 
-//         // Impact Detection
+//         // Faster Impact Detection
 //         if (_isInFreeFall &&
 //             acceleration > _impactThreshold &&
 //             _fallStartTime != null) {
@@ -58,14 +58,13 @@
 //       onError: (error) {
 //         print("Accelerometer Error: $error");
 //       },
-//       cancelOnError: false,
 //     );
 
 //     _gyroscopeSubscription = gyroscopeEvents.listen(
 //       (event) {
 //         double rotation = _calculateRotation(event);
 
-//         // High Rotation Detection
+//         // Real-Time High Rotation Detection
 //         if (rotation > _rotationThreshold) {
 //           _highRotation = true;
 //         }
@@ -73,7 +72,6 @@
 //       onError: (error) {
 //         print("Gyroscope Error: $error");
 //       },
-//       cancelOnError: false,
 //     );
 //   }
 
@@ -88,7 +86,7 @@
 //         _isStill = true;
 //       }
 
-//       // Confirm Fall
+//       // Instant Fall Confirmation
 //       if (_impactOccurred && (_isStill || _highRotation)) {
 //         _confirmFall();
 //       } else {
@@ -103,7 +101,7 @@
 //       onFallDetected(true);
 //       _playEmergencyBeep();
 
-//       Future.delayed(const Duration(seconds: 3), () {
+//       Future.delayed(const Duration(seconds: 2), () {
 //         _resetFallDetection();
 //       });
 //     }
@@ -120,7 +118,7 @@
 //   void _playEmergencyBeep() async {
 //     try {
 //       await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
-//       Future.delayed(const Duration(seconds: 3), () {
+//       Future.delayed(const Duration(seconds: 2), () {
 //         _audioPlayer.stop();
 //       });
 //     } catch (e) {
@@ -154,22 +152,21 @@ class FallDetection {
   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
   StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
 
-  final double _impactThreshold = 18.0; // Lowered for quicker impact detection
-  final double _freeFallThreshold = 4.5; // Detects free fall instantly
-  final double _rotationThreshold = 3.0; // Detects sudden rotation
-  final double _inactivityThreshold = 8.0; // Faster stillness detection
-  final Duration _fallTimeout = const Duration(
-    milliseconds: 800,
-  ); // Extremely fast confirmation
-  final Duration _stillnessCheckDuration = const Duration(
-    seconds: 1,
-  ); // Reduced stillness check delay
+  final double _impactThreshold = 20.0; // Higher to ignore minor impacts
+  final double _freeFallThreshold = 6.0; // Avoids false free falls from walking
+  final double _rotationThreshold =
+      3.5; // Ensures high rotation before confirming
+  final double _shakeThreshold = 25.0; // Detects only strong hand shakes
+  final double _inactivityThreshold = 9.0; // Faster stillness detection
+  final Duration _fallTimeout = const Duration(milliseconds: 800);
+  final Duration _stillnessCheckDuration = const Duration(seconds: 1);
 
   bool _fallDetected = false;
   bool _isInFreeFall = false;
   bool _impactOccurred = false;
   bool _isStill = false;
   bool _highRotation = false;
+  bool _strongShake = false;
   DateTime? _fallStartTime;
   AccelerometerEvent? _lastAccelEvent;
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -179,17 +176,25 @@ class FallDetection {
       (event) {
         double acceleration = _calculateAcceleration(event);
 
-        // Immediate Free Fall Detection
-        if (acceleration < _freeFallThreshold) {
+        // **Shake Detection** (Prevents false falls from slight movement)
+        if (acceleration > _shakeThreshold) {
+          print("Strong shake detected");
+          _strongShake = true;
+        }
+
+        // **Free Fall Detection**
+        if (acceleration < _freeFallThreshold && _strongShake) {
+          print("Free fall detected");
           _isInFreeFall = true;
           _fallStartTime = DateTime.now();
         }
 
-        // Faster Impact Detection
+        // **Impact Detection**
         if (_isInFreeFall &&
             acceleration > _impactThreshold &&
             _fallStartTime != null) {
           if (DateTime.now().difference(_fallStartTime!) <= _fallTimeout) {
+            print("Impact detected");
             _isInFreeFall = false;
             _impactOccurred = true;
             _fallStartTime = null;
@@ -208,8 +213,9 @@ class FallDetection {
       (event) {
         double rotation = _calculateRotation(event);
 
-        // Real-Time High Rotation Detection
+        // **Rotation Detection** (Helps detect only actual falls)
         if (rotation > _rotationThreshold) {
+          print("High rotation detected");
           _highRotation = true;
         }
       },
@@ -227,13 +233,15 @@ class FallDetection {
               : 0.0;
 
       if (stillnessAcceleration < _inactivityThreshold) {
+        print("Stillness detected");
         _isStill = true;
       }
 
-      // Instant Fall Confirmation
+      // **Final Fall Confirmation**
       if (_impactOccurred && (_isStill || _highRotation)) {
         _confirmFall();
       } else {
+        print("Fall detection failed. Resetting...");
         _resetFallDetection();
       }
     });
@@ -241,6 +249,7 @@ class FallDetection {
 
   void _confirmFall() async {
     if (!_fallDetected) {
+      print("Fall confirmed!");
       _fallDetected = true;
       onFallDetected(true);
       _playEmergencyBeep();
@@ -252,10 +261,12 @@ class FallDetection {
   }
 
   void _resetFallDetection() {
+    print("Fall detection reset.");
     _fallDetected = false;
     _impactOccurred = false;
     _isStill = false;
     _highRotation = false;
+    _strongShake = false;
     onFallDetected(false);
   }
 
