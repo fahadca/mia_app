@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:location/location.dart';
+import 'dart:convert';
 
 class ApiService {
   static const String baseUrl =
-      "http://192.168.100.181:5000"; // Ensure correct IP
+      "http://192.168.37.181:5000"; // Ensure correct IP
 
   static Future<File?> pickImage() async {
     final pickedFile = await ImagePicker().pickImage(
@@ -66,6 +68,29 @@ class ApiService {
           : [];
     } catch (e) {
       return [];
+    }
+  }
+
+  static Future<void> sendFallAlert() async {
+    try {
+      Location location = Location();
+      LocationData locationData = await location.getLocation();
+      double latitude = locationData.latitude ?? 0.0;
+      double longitude = locationData.longitude ?? 0.0;
+
+      var response = await http.post(
+        Uri.parse('$baseUrl/fall_detect'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"latitude": latitude, "longitude": longitude}),
+      );
+
+      if (response.statusCode == 200) {
+        print("Fall alert sent successfully.");
+      } else {
+        print("Failed to send fall alert.");
+      }
+    } catch (e) {
+      print("Error sending fall alert: $e");
     }
   }
 }

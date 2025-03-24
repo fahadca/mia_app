@@ -6,6 +6,7 @@ import 'fall_detect.dart';
 import 'face_registration.dart';
 import 'face_recognition.dart';
 import 'object_detection.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePageWidget extends StatefulWidget {
   const HomePageWidget({super.key});
@@ -18,6 +19,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> emergencyContacts = [];
   TextEditingController contactController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   late FallDetection _fallDetection;
   bool _fallOccurred = false;
   int _tapCounter = 0;
@@ -48,6 +50,18 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     setState(() {
       emergencyContacts = prefs.getStringList('emergencyContacts') ?? [];
     });
+  }
+
+  void _addEmail() {
+    String email = emailController.text.trim();
+    if (email.isNotEmpty) {
+      FirebaseFirestore.instance.collection('emails').add({'email': email});
+      emailController.clear();
+    }
+  }
+
+  void _deleteEmail(String docId) {
+    FirebaseFirestore.instance.collection('emails').doc(docId).delete();
   }
 
   void _handleTripleTap(BuildContext context) {
@@ -100,31 +114,46 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   ),
                 ),
                 const SizedBox(height: 10),
+                //
                 TextField(
-                  controller: contactController,
-                  keyboardType: TextInputType.phone,
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    labelText: 'Enter Contact Number',
+                    labelText: 'Enter Email',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.add),
-                      onPressed: () {},
+                      onPressed: _addEmail,
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: emergencyContacts.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(emergencyContacts[index]),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {},
-                        ),
+                  child: StreamBuilder(
+                    stream:
+                        FirebaseFirestore.instance
+                            .collection('emails')
+                            .snapshots(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      return ListView(
+                        children:
+                            snapshot.data!.docs.map((doc) {
+                              return ListTile(
+                                title: Text(doc['email']),
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () => _deleteEmail(doc.id),
+                                ),
+                              );
+                            }).toList(),
                       );
                     },
                   ),
