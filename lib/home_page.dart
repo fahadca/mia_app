@@ -99,6 +99,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: false, // New
         drawer: Drawer(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -227,7 +228,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(
-                      color: _fallOccurred ? Colors.red : Colors.green,
+                      color:
+                          _fallOccurred ? Colors.red : const Color(0xFF39D2C0),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(

@@ -7,7 +7,7 @@ import 'dart:convert';
 
 class ApiService {
   static const String baseUrl =
-      "http://192.168.37.181:5000"; // Ensure correct IP
+      "http://192.168.52.181:5000"; // Ensure correct IP
 
   static Future<File?> pickImage() async {
     final pickedFile = await ImagePicker().pickImage(

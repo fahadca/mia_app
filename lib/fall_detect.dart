@@ -11,10 +11,10 @@ class FallDetection {
   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
   StreamSubscription<GyroscopeEvent>? _gyroscopeSubscription;
 
-  final double _impactThreshold = 18.0;
-  final double _freeFallThreshold = 4.5;
-  final double _rotationThreshold = 3.0;
-  final double _inactivityThreshold = 8.0;
+  final double _impactThreshold = 17.0;
+  final double _freeFallThreshold = 3.5;
+  final double _rotationThreshold = 6.5;
+  final double _inactivityThreshold = 2.0;
   final Duration _fallTimeout = const Duration(milliseconds: 800);
   final Duration _stillnessCheckDuration = const Duration(seconds: 1);
 
@@ -99,7 +99,7 @@ class FallDetection {
   void _playEmergencyBeep() async {
     try {
       await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 3), () {
         _audioPlayer.stop();
       });
     } catch (e) {
