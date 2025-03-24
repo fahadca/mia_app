@@ -7,6 +7,7 @@ import 'face_registration.dart';
 import 'face_recognition.dart';
 import 'object_detection.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'emotion_detect.dart';
 
 class HomePageWidget extends StatefulWidget {
   const HomePageWidget({super.key});
@@ -222,23 +223,44 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color:
-                          _fallOccurred ? Colors.red : const Color(0xFF39D2C0),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
+                  const SizedBox(height: 30),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
                       child: Text(
-                        _fallOccurred ? 'FALL DETECTED' : 'NO FALL',
+                        'Status',
                         style: GoogleFonts.poppins(
                           fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF14181B),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 5,
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: const Color(0x9D115B64),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          _fallOccurred ? 'FALL DETECTED' : 'NO FALL',
+                          style: GoogleFonts.poppins(
+                            color:
+                                _fallOccurred
+                                    ? Colors.red
+                                    : const Color(0xFF39D2C0),
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -246,7 +268,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   const SizedBox(height: 20),
                   _buildButton('Register Face', const FaceRegistrationScreen()),
                   _buildButton('Smart Vision', const ObjectDetectionScreen()),
-                  _buildButton('Mood Sense', null),
+                  _buildButton('Mood Sense', const EmotionDetectionScreen()),
                   _buildButton('Identity Scan', const FaceRecognitionScreen()),
                 ],
               ),

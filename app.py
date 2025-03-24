@@ -18,7 +18,7 @@ import os
 from dotenv import load_dotenv
 
 app = Flask(__name__)
-cred = credentials.Certificate("miaapp-d291d-firebase-adminsdk-fbsvc-69b271ccf5.json")
+cred = credentials.Certificate("miaapp-d291d-firebase-adminsdk-fbsvc-0553353d59.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 

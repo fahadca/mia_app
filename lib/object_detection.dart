@@ -65,6 +65,18 @@ class _ObjectDetectionScreenState extends State<ObjectDetectionScreen> {
     }
   }
 
+  // Future<void> _processObjectDetection(File imageFile) async {
+  //   List<String> objects = await ApiService.detectObjects(imageFile);
+  //   if (mounted) {
+  //     setState(() {
+  //       detectedObjects = objects;
+  //     });
+  //   }
+  //   if (objects.isNotEmpty) {
+  //     flutterTts.speak(objects.join(", "));
+  //   }
+  // }
+
   Future<void> _processObjectDetection(File imageFile) async {
     List<String> objects = await ApiService.detectObjects(imageFile);
     if (mounted) {
@@ -72,8 +84,11 @@ class _ObjectDetectionScreenState extends State<ObjectDetectionScreen> {
         detectedObjects = objects;
       });
     }
+
     if (objects.isNotEmpty) {
-      flutterTts.speak(objects.join(", "));
+      String objectNames = objects.join(", "); // Concatenating objects
+      await flutterTts.awaitSpeakCompletion(true); // Ensures speech completion
+      await flutterTts.speak(objectNames); // Speak all objects at once
     }
   }
 
