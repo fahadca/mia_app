@@ -26,6 +26,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   int _tapCounter = 0;
   DateTime? _firstTapTime;
 
+  // New Variable to track if a tap occurred
+  bool _hasTapped = false;
+
   @override
   void initState() {
     super.initState();
@@ -85,18 +88,52 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     }
   }
 
+  // Handle Tap for Emotion Recognition
+  void _handleTap() {
+    setState(() {
+      _hasTapped = true; // Mark that the tap occurred
+    });
+  }
+
+  // Handle Long Press for Emotion Recognition (only if tap occurred first)
+  void _handleLongPress(BuildContext context) {
+    if (_hasTapped) {
+      // Trigger Emotion Recognition
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const EmotionDetectionScreen()),
+      );
+      // Reset the tap state
+      setState(() {
+        _hasTapped = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onLongPress: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const FaceRecognitionScreen(),
-          ),
-        );
+        if (!_hasTapped) {
+          // Trigger Face Recognition if no tap has occurred
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FaceRecognitionScreen(),
+            ),
+          );
+        } else {
+          // Trigger Emotion Recognition if a tap occurred before long press
+          _handleLongPress(context);
+        }
       },
-      onTap: () => _handleTripleTap(context),
+      onTap: () {
+        // Handle the single tap to mark that a tap has occurred
+        _handleTap();
+        // Handle the triple tap for object detection
+        _handleTripleTap(context);
+      },
+
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: Colors.white,

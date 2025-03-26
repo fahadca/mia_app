@@ -7,7 +7,7 @@ import 'dart:convert';
 
 class ApiService {
   static const String baseUrl =
-      "http://192.168.52.181:5000"; // Ensure correct IP
+      "http://192.168.37.181:5000"; // Ensure correct IP
 
   static Future<File?> pickImage() async {
     final pickedFile = await ImagePicker().pickImage(
@@ -91,6 +91,24 @@ class ApiService {
       }
     } catch (e) {
       print("Error sending fall alert: $e");
+    }
+  }
+
+  // New function to trigger emotion recognition route
+  static Future<String> recognizeEmotion(File image) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/recognize_emotion'),
+      );
+      request.files.add(await http.MultipartFile.fromPath('image', image.path));
+      var response = await request.send();
+      String responseBody = await response.stream.bytesToString();
+
+      // Return the emotion detected by the server
+      return response.statusCode == 200 ? responseBody : "No Emotion Detected";
+    } catch (e) {
+      return "Error recognizing emotion: $e";
     }
   }
 }

@@ -16,6 +16,7 @@ from email.mime.multipart import MIMEMultipart
 # from sendgrid.helpers.mail import Mail
 import os
 from dotenv import load_dotenv
+from hsemotion.facial_emotions import HSEmotionRecognizer
 
 app = Flask(__name__)
 cred = credentials.Certificate("miaapp-d291d-firebase-adminsdk-fbsvc-0553353d59.json")
@@ -24,6 +25,9 @@ db = firestore.client()
 
 
 load_dotenv()
+
+# Initialize emotion recognizer
+hs_er = HSEmotionRecognizer(model_name='enet_b0_8_best_afew', device='cpu')
 
 
 SMTP_EMAIL = os.getenv("SMTP_EMAIL")
@@ -100,6 +104,28 @@ def detect_objects():
             detected_objects.add(yolo_model.names[cls])
 
     return jsonify({"objects": list(detected_objects)})
+
+@app.route('/recognize_emotion', methods=['POST'])
+def recognize_emotion():
+    # Load the image from the request
+    image = cv2.imdecode(np.frombuffer(request.files['image'].read(), np.uint8), cv2.IMREAD_COLOR)
+
+    # Detect faces
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml").detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
+
+    if len(faces) == 0:
+        return jsonify({"emotion": "No Face Detected"}), 400
+
+    # Process the first face
+    (x, y, w, h) = faces[0]
+    face_roi = image[y:y + h, x:x + w]
+
+    # Get the predicted emotion
+    emotions = hs_er.predict_emotions(face_roi)
+    emotion = emotions[0]  # Get the most likely emotion
+
+    return jsonify({"emotion": emotion})
 
 @app.route('/fall_detect', methods=['POST'])
 def fall_detect():
